@@ -1,0 +1,40 @@
+<?php
+
+/**
+ * @file
+ * Schema definition.
+ *
+ * @return mixed
+ */
+
+/**
+ * Table schema.
+ */
+function surlogin_schema() {
+  $schema['surlogin'] = array(
+    'description' => 'Mapping login tokens to userids.',
+    'fields' => array(
+      'uid' => array(
+        'description' => 'The user id of the generated login',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'login_key' => array(
+        'description' => 'The random token the user can login with.',
+        'type' => 'varchar',
+        'length' => 43,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'valid_until' => array(
+        'description' => 'The date when the token will expire.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('login_key'),
+  );
+  return $schema;
+}

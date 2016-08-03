@@ -1,0 +1,4 @@
+name = Secure URLogin
+description = A secure way to login using a URL
+core = 7.x
+dependencies[] = user

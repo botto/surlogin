@@ -1,0 +1,80 @@
+<?php
+
+/**
+ * @file
+ * Main module for SURLogin.
+ *
+ * A simple way to provide user logins to users through their email.
+ */
+
+// 90 * 24 * 60 * 60.
+define('SURLOGIN_EXPIRE_DELTA_DEFAULT', 7776000);
+
+/**
+ * Returns a login key.
+ *
+ * @return string
+ *    The randomly generated login key.
+ */
+function surlogin_generate_login_key() {
+  return drupal_hash_base64(drupal_random_key() . drupal_get_private_key() . drupal_get_hash_salt());
+}
+
+/**
+ * Menu router for surlogin.
+ */
+function surlogin_menu() {
+  $items = array();
+  $items['sl'] = array(
+    'title' => 'SURLogin',
+    'page callback' => 'surlogin_login_key_login_user',
+    // This should be accessible to all, access check is performed in callback.
+    'access callback' => TRUE,
+    'file' => 'surlogin.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/config/surlogin'] = array(
+    'title' => 'Secure URLogin Configuration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('surlogin_admin_page_form'),
+    'access arguments' => array('administer surlogin config'),
+    'file' => 'surlogin.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['user/%/surlogin'] = array(
+    'title' => 'SURLogin',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('surlogin_user_page', 1),
+    'access arguments' => array('administer users surlogin'),
+    'file' => 'surlogin.pages.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function surlogin_permission() {
+  return array(
+    'surlogin allow generate key' => array(
+      'title' => t('Allow SURLogin key'),
+      'description' => t('The user will be allowed to login using SURLogin, the module will not generate keys for anyone without this permission.'),
+    ),
+    'administer users surlogin' => array(
+      'title' => t('Administer all users SURLogin keys'),
+    ),
+    'administer surlogin config' => array(
+      'title' => t('Administer the SURLogin configuration'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_admin_paths().
+ */
+function surlogin_admin_paths() {
+  return array(
+    'user/*/surlogin' => TRUE,
+  );
+}
