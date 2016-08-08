@@ -77,26 +77,40 @@ function surlogin_delete_by_uid($uids) {
 /**
  * Returns a login key object by UID.
  *
- * @param int $uid
- *    The UID to retrive a login key for.
+ * @param int|array $uids
+ *    The UID(s) to retrieve a login key for.
+ *    An array of UIDS can be used.
  * @param bool|int $valid_until
  *    Pass the date the key should be valid until.
  *    If no date is passed then the key will be returned even though it's
  *    expired.
  *
- * @return mixed The login key object, otherwise FALSE.
- *    The login key object, otherwise FALSE.
+ * @return mixed SURLogin(s) otherwise FALSE.
+ *    If the result yielded multiple results then an array of these logins is
+ *    returned keyed on UID, otherwise if only one result, the the singular
+ *    login object is returned. If no results were yielded then FALSE.
  */
-function surlogin_get_login_key_by_uid($uid, $valid_until = FALSE) {
-  $q = db_select('surlogin', 's')
-    ->fields('s')
-    ->condition('uid', $uid, '=');
-  if ($valid_until !== FALSE && is_int($valid_until)) {
-    $q->condition('valid_until', $valid_until, '>');
+function surlogin_get_login_key_by_uid($uids, $valid_until = FALSE) {
+  if (is_int($uids)) {
+    $uids = array($uids);
   }
-  $result = $q->execute()->fetchAllAssoc('uid');
-  if (!empty($result) && !empty($result[$uid])) {
-    return $result[$uid];
+
+  if (is_array($uids) && count($uids) > 0) {
+    $q = db_select('surlogin', 's')
+      ->fields('s')
+      ->condition('uid', $uids, 'IN');
+    if ($valid_until !== FALSE && is_int($valid_until)) {
+      $q->condition('valid_until', $valid_until, '>');
+    }
+    $result = $q->execute()->fetchAllAssoc('uid');
+    if (!empty($result) && count($result) > 0) {
+      if (count($result) === 1) {
+        return reset($result);
+      }
+      else {
+        return $result;
+      }
+    }
   }
   return FALSE;
 }
