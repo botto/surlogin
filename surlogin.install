@@ -35,6 +35,15 @@ function surlogin_schema() {
       ),
     ),
     'primary key' => array('login_key'),
+    'unique keys' => array(
+      'uid' => array('uid'),
+    ),
+    'foreign keys' => array(
+      'uid' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
   );
   return $schema;
 }
