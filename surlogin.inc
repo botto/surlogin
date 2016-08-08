@@ -10,34 +10,53 @@
  *
  * This will save the mapping between the UID and the SURLogin key.
  *
- * @param int $uid
- *    The userid to generate a key for.
+ * @param int|array $uids
+ *    Either a sinlge UID or multiple UID in an array.
  *
- * @return string
- *    A SURLogin login key, 43 characters long.
+ * @return array
+ *    A SURLogin login object, containing the uid, key and expiry.
  */
-function surlogin_create_user_login_key($uid) {
-  $login_key = surlogin_generate_login_key();
-  // Get the timestamp in future when the login expires.
-  // Defaults 90 * 24 * 60 * 60.
-  $expire_delta =
-    variable_get('surlogin_key_expire_delta', SURLOGIN_EXPIRE_DELTA_DEFAULT);
-  // Make sure we are working with numbers.
-  if (is_numeric($expire_delta)) {
-    $expire = strtotime('today') + $expire_delta;
-  }
-  else {
-    $expire = strtotime('today') + SURLOGIN_EXPIRE_DELTA_DEFAULT;
+function surlogin_create_user_login_key($uids) {
+  if (is_int($uids)) {
+    $uids = array($uids);
   }
 
-  $q = db_insert('surlogin')
-    ->fields(array(
-      'uid' => $uid,
-      'login_key' => $login_key,
-      'valid_until' => $expire,
-    ));
-  $q->execute();
-  return $login_key;
+  if (is_array($uids) && count($uids) > 0) {
+    // Get the timestamp in future when the login expires.
+    // Defaults 90 * 24 * 60 * 60.
+    $expire_delta =
+      variable_get('surlogin_key_expire_delta', SURLOGIN_EXPIRE_DELTA_DEFAULT);
+    // Make sure we are working with numbers.
+    if (is_numeric($expire_delta)) {
+      $expire = strtotime('today') + $expire_delta;
+    }
+    else {
+      $expire = strtotime('today') + SURLOGIN_EXPIRE_DELTA_DEFAULT;
+    }
+    $logins = array();
+    $q = db_insert('surlogin')
+      ->fields(array('uid', 'login_key', 'valid_until'));
+    foreach ($uids as $uid) {
+      $q->values(array(
+        'uid' => $uid,
+        'login_key' => surlogin_generate_login_key(),
+        'valid_until' => $expire,
+      ));
+    }
+    try {
+      if (count($uids) > 0) {
+        $q->execute();
+        return TRUE;
+      }
+    }
+    catch (PDOException $e) {
+      drupal_set_message(t('DB Error: %msg', array('%msg' => $e->getMessage())),
+        'error'
+          );
+      return FALSE;
+    }
+  }
+  return FALSE;
 }
 
 /**
