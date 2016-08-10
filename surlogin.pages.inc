@@ -20,7 +20,7 @@
  */
 function surlogin_user_page($form, &$form_state, $uid) {
   module_load_include('inc', 'surlogin');
-  $login_key = surlogin_get_login_key_by_uid($uid);
+  $login_key = surlogin_get_login_key_by_uid(intval($uid));
   $account = user_load($uid);
   $form = array();
   $form['login_url'] = array(
@@ -93,7 +93,7 @@ function surlogin_user_page($form, &$form_state, $uid) {
 function surlogin_user_page_validate_create_login_key(&$form, &$form_state) {
   module_load_include('inc', 'surlogin');
   $uid = arg(1);
-  $login_key = surlogin_get_login_key_by_uid($uid);
+  $login_key = surlogin_get_login_key_by_uid(intval($uid));
   if (!empty($login_key)) {
     form_set_error('login_key', t('Please delete the existing key first.'));
   }
@@ -110,7 +110,10 @@ function surlogin_user_page_validate_create_login_key(&$form, &$form_state) {
 function surlogin_user_page_submit_create_login_key(&$form, &$form_state) {
   if (user_access('administer other users surlogin') === TRUE) {
     module_load_include('inc', 'surlogin');
-    surlogin_create_user_login_key(arg(1));
+    $uid = intval(arg(1));
+    if ($uid > 0) {
+      surlogin_create_user_login_key($uid);
+    }
   }
 }
 
