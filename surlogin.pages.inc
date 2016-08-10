@@ -108,7 +108,7 @@ function surlogin_user_page_validate_create_login_key(&$form, &$form_state) {
  *    Form state array.
  */
 function surlogin_user_page_submit_create_login_key(&$form, &$form_state) {
-  if (user_access('administer other users surlogin') === TRUE) {
+  if (user_access('administer users surlogin') === TRUE) {
     module_load_include('inc', 'surlogin');
     $uid = intval(arg(1));
     if ($uid > 0) {
@@ -126,7 +126,7 @@ function surlogin_user_page_submit_create_login_key(&$form, &$form_state) {
  *    Form state array.
  */
 function surlogin_user_page_submit_delete_login_key(&$form, &$form_state) {
-  if (user_access('administer other users surlogin') === TRUE) {
+  if (user_access('administer users surlogin') === TRUE) {
     module_load_include('inc', 'surlogin');
     $uid = arg(1);
     surlogin_delete_by_uid($uid);
